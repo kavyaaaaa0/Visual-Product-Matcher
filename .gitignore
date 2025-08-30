@@ -3,9 +3,18 @@ node_modules/
 backend/venv/
 data_processing/venv/
 
-# Environment variables (keep .env.template)
+# Environment variables (CRITICAL: Never commit actual API keys)
 .env
 .env.local
+.env.production
+.env.development
+**/env
+**/.env
+
+# API Key files
+api_keys.txt
+secrets.json
+config.json
 
 # Cache and logs
 __pycache__/

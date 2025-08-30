@@ -9,8 +9,8 @@
 2. Connect GitHub → Select `kavyaaaaa0/Visual-Product-Matcher`
 3. Render auto-detects settings from `render.yaml` ✅
 4. Add environment variables:
-   - `GOOGLE_API_KEY`: `AIzaSyBHzHoRuOjxnwXE9zpZ7rwm04BurYOwxsM`
-   - `PINECONE_API_KEY`: `your_pinecone_key` (optional)
+   - `GOOGLE_API_KEY`: `{{your_google_api_key}}` (see SECURITY_SETUP.md)
+   - `PINECONE_API_KEY`: `{{your_pinecone_key}}` (optional, see SECURITY_SETUP.md)
 5. Click **Deploy**
 
 ### Step 2: Frontend (Vercel) - 1 minute  
