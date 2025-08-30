@@ -2,17 +2,5 @@ services:
   - type: web
     name: visual-product-matcher-backend
     env: python
-    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: python start.py
-    envVars:
-      - key: PINECONE_API_KEY
-        sync: false
-      - key: GOOGLE_API_KEY
-        sync: false
-      - key: IMAGE_DIRECTORY
-        value: "./images"
-      - key: PORT
-        value: "8000"
-      - key: PYTHON_VERSION
-        value: "3.12.0"
