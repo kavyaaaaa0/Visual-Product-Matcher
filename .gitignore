@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+backend/venv/
+data_processing/venv/
+
+# Environment variables (keep .env.template)
+.env
+.env.local
+
+# Cache and logs
+__pycache__/
+*.pyc
+*.log
+server.log
+.DS_Store
+*.sqlite3
+
+# Build outputs
+frontend/build/
+frontend/dist/
+
+# Development only
+.pytest_cache/
+.coverage
+.mypy_cache/
+
+# Large dataset files (use Pinecone instead)
+data_processing/dataset/Images/Images/
+data_processing/dataset/Fashion\ Dataset.csv
+
+# Keep only deployment database for production
+backend/product_database.json
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+
+# Testing
+coverage.xml
+*.cover
+.tox/
+
+# Jupyter notebooks
+.ipynb_checkpoints
+
+# Package files
+*.egg-info/
+dist/
+build/
