@@ -1,65 +1,10 @@
-import math
-from typing import List, Dict
+#!/usr/bin/env python3
+
+import json
+import os
+from pathlib import Path
 from PIL import Image
-import io
-
-# TensorFlow is disabled for deployment simplicity
-TF_HUB_AVAILABLE = False
-
-def calculate_cosine_similarity(embedding1: List[float], embedding2: List[float]) -> float:
-    try:
-        # Calculate dot product
-        dot_product = sum(a * b for a, b in zip(embedding1, embedding2))
-        
-        # Calculate magnitudes
-        magnitude1 = math.sqrt(sum(a * a for a in embedding1))
-        magnitude2 = math.sqrt(sum(b * b for b in embedding2))
-        
-        # Avoid division by zero
-        if magnitude1 == 0 or magnitude2 == 0:
-            return 0.0
-            
-        # Calculate cosine similarity
-        similarity = dot_product / (magnitude1 * magnitude2)
-        return float(similarity)
-    except Exception as e:
-        print(f"Error calculating similarity: {e}")
-        return 0.0
-
-# Global model cache
-_model_cache = None
-
-def get_vision_model():
-    """Get or load the vision model for feature extraction"""
-    global _model_cache
-    if _model_cache is None and TF_HUB_AVAILABLE:
-        try:
-            # Use MobileNet for lightweight feature extraction
-            _model_cache = hub.load("https://tfhub.dev/google/imagenet/mobilenet_v2_100_224/feature_vector/5")
-            print("Loaded MobileNet model for enhanced similarity")
-        except Exception as e:
-            print(f"Failed to load TF Hub model: {e}")
-            _model_cache = False
-    return _model_cache if _model_cache is not False else None
-
-def generate_deep_features(image: Image.Image) -> List[float]:
-    """Extract deep learning features from image"""
-    model = get_vision_model()
-    if model is None:
-        return []
-    
-    try:
-        # Prepare image for model
-        img_array = np.array(image.resize((224, 224)))
-        img_array = img_array / 255.0  # Normalize
-        img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
-        
-        # Extract features
-        features = model(img_array)
-        return features.numpy().flatten()[:128].tolist()  # Use first 128 features
-    except Exception as e:
-        print(f"Error extracting deep features: {e}")
-        return []
+import math
 
 def mean(values):
     return sum(values) / len(values) if values else 0
@@ -83,41 +28,11 @@ def simple_histogram(values, bins=5, range_min=0, range_max=255):
     
     return hist
 
-def generate_enhanced_color_features(image: Image.Image) -> List[float]:
-    """Generate enhanced color and texture features"""
-    features = []
-    
-    # Convert to different color spaces for better analysis
-    rgb_img = image.convert('RGB')
-    
-    # RGB analysis
-    rgb_pixels = list(rgb_img.getdata())
-    
-    if rgb_pixels:
-        # RGB statistics
-        rgb_means = [mean([p[i] for p in rgb_pixels]) / 255.0 for i in range(3)]
-        rgb_stds = [std_dev([p[i] for p in rgb_pixels]) / 255.0 for i in range(3)]
-        
-        features.extend(rgb_means + rgb_stds)
-        
-        # Color distribution (histogram)
-        for channel in range(3):
-            rgb_vals = [p[channel] for p in rgb_pixels]
-            hist = simple_histogram(rgb_vals, bins=5, range_min=0, range_max=255)
-            hist_norm = [h / len(rgb_pixels) for h in hist]
-            features.extend(hist_norm)
-        
-        # Brightness and contrast  
-        brightness_vals = [sum(p) / 3 for p in rgb_pixels]
-        brightness = mean(brightness_vals) / 255.0
-        contrast = std_dev(brightness_vals) / 255.0
-        features.extend([brightness, contrast])
-    
-    return features
-
-def extract_visual_features_from_image(image: Image.Image) -> List[float]:
-    """Extract comprehensive visual features from a PIL Image - matches database generation"""
+def extract_visual_features(image_path):
+    """Extract comprehensive visual features from an image file"""
     try:
+        image = Image.open(image_path)
+        
         # Resize for consistency
         if image.width > 224 or image.height > 224:
             image.thumbnail((224, 224), Image.Resampling.LANCZOS)
@@ -284,101 +199,67 @@ def extract_visual_features_from_image(image: Image.Image) -> List[float]:
         return features
         
     except Exception as e:
-        print(f"Error extracting visual features: {e}")
+        print(f"Error extracting features from {image_path}: {e}")
         return [0.1] * 50
 
-def generate_query_embedding(image_data: bytes) -> List[float]:
-    """Generate visual embedding from uploaded image data"""
-    try:
-        image = Image.open(io.BytesIO(image_data))
-        return extract_visual_features_from_image(image)
+def regenerate_database_embeddings():
+    """Regenerate all product embeddings using actual visual features"""
+    
+    print("🔄 Regenerating database with visual embeddings...")
+    
+    # Load current database
+    db_path = "backend/product_database_deploy.json"
+    if not Path(db_path).exists():
+        print("❌ Database file not found!")
+        return False
+    
+    with open(db_path, 'r') as f:
+        database = json.load(f)
+    
+    products = database.get('products', [])
+    print(f"📊 Processing {len(products)} products...")
+    
+    # Regenerate embeddings for each product
+    updated_count = 0
+    for i, product in enumerate(products):
+        image_path = Path("backend") / product['image_path']
         
-    except Exception as e:
-        print(f"Error generating query embedding: {e}")
-        # Return default embedding with 50 dimensions
-        return [0.1] * 50
-
-def calculate_enhanced_similarity(query_embedding: List[float], product_embedding: List[float]) -> float:
-    """Calculate similarity with enhanced weighting for clothing features"""
-    try:
-        if len(query_embedding) != len(product_embedding) or len(query_embedding) != 50:
-            return 0.0
-        
-        # Define feature importance weights
-        weights = [1.0] * 50
-        
-        # Color features (dims 0-22) - moderate importance
-        for i in range(23):
-            weights[i] = 0.8
-        
-        # Shape/texture features (dims 23-49) - high importance for clothing type
-        for i in range(23, 50):
-            weights[i] = 1.2
-        
-        # Edge and texture features (dims 33-49) - highest importance
-        for i in range(33, 50):
-            weights[i] = 1.5
-        
-        # Calculate weighted cosine similarity
-        weighted_dot_product = sum(w * a * b for w, a, b in zip(weights, query_embedding, product_embedding))
-        
-        # Calculate weighted magnitudes
-        weighted_magnitude1 = math.sqrt(sum(w * a * a for w, a in zip(weights, query_embedding)))
-        weighted_magnitude2 = math.sqrt(sum(w * b * b for w, b in zip(weights, product_embedding)))
-        
-        # Avoid division by zero
-        if weighted_magnitude1 == 0 or weighted_magnitude2 == 0:
-            return 0.0
+        if image_path.exists():
+            print(f"Processing {i+1}/{len(products)}: {product['category']} - {image_path.name}")
             
-        # Calculate weighted cosine similarity
-        similarity = weighted_dot_product / (weighted_magnitude1 * weighted_magnitude2)
-        return float(similarity)
-        
-    except Exception as e:
-        print(f"Error calculating enhanced similarity: {e}")
-        return 0.0
-
-def find_similar_products(
-    query_embedding: List[float], 
-    product_database: Dict, 
-    min_similarity: float = 0.0,
-    max_results: int = 10
-) -> List[Dict]:
-    """Find similar products using enhanced visual similarity"""
-    
-    if not query_embedding:
-        return []
-    
-    products = product_database.get('products', [])
-    similarities = []
-    
-    # Calculate similarities
-    for product in products:
-        if 'embedding' in product and product['embedding']:
-            # Use enhanced similarity calculation
-            similarity = calculate_enhanced_similarity(query_embedding, product['embedding'])
+            # Extract visual features from the actual image
+            visual_embedding = extract_visual_features(image_path)
             
-            if similarity >= min_similarity:
-                result = {
-                    'product_id': product['product_id'],
-                    'product_name': product['product_name'],
-                    'category': product['category'],
-                    'image_path': product['image_path'],
-                    'similarity_score': similarity
-                }
-                similarities.append(result)
+            if visual_embedding:
+                product['embedding'] = visual_embedding
+                updated_count += 1
+            else:
+                print(f"⚠️  Failed to extract features for {image_path}")
+        else:
+            print(f"⚠️  Image not found: {image_path}")
     
-    # Sort by similarity (descending) and return top results
-    similarities.sort(key=lambda x: x['similarity_score'], reverse=True)
-    return similarities[:max_results]
+    print(f"✅ Updated {updated_count} product embeddings")
+    
+    # Update metadata
+    database['metadata']['embedding_model'] = "visual_feature_based"
+    database['metadata']['note'] = f"Database with visual embeddings extracted from actual product images"
+    database['metadata']['generation_timestamp'] = pd.Timestamp.now().isoformat()
+    
+    # Save updated database
+    with open(db_path, 'w') as f:
+        json.dump(database, f, indent=2)
+    
+    print(f"💾 Saved updated database to {db_path}")
+    
+    # Also update the root copy
+    root_db_path = "product_database_deploy.json"
+    with open(root_db_path, 'w') as f:
+        json.dump(database, f, indent=2)
+    
+    print(f"💾 Updated root database copy: {root_db_path}")
+    
+    return True
 
-def get_category_stats(product_database: Dict) -> Dict[str, int]:
-    """Get statistics about categories in the database"""
-    products = product_database.get('products', [])
-    category_counts = {}
-    
-    for product in products:
-        category = product.get('category', 'Uncategorized')
-        category_counts[category] = category_counts.get(category, 0) + 1
-    
-    return category_counts
+if __name__ == "__main__":
+    import pandas as pd
+    regenerate_database_embeddings()
