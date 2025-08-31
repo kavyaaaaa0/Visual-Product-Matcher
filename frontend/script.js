@@ -1,5 +1,5 @@
 // Configuration
-const API_BASE_URL = 'https://visual-product-matcher-backend.onrender.com';
+const API_BASE_URL = 'https://visual-product-matcher-p5u4.onrender.com';
 
 // State
 let currentSearchMethod = 'upload';

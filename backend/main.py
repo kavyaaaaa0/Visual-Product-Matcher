@@ -53,12 +53,16 @@ app.add_middleware(
 
 product_database: Optional[Dict[str, Any]] = None
 
-# Configure image directory path for different environments
-image_dir = os.getenv("IMAGE_DIRECTORY", "../data_processing/dataset/Images/Images")
+# Configure image directory path for different environments  
+image_dir = os.getenv("IMAGE_DIRECTORY", "./images")
 if Path(image_dir).exists():
     app.mount("/images", StaticFiles(directory=image_dir), name="images")
+    print(f"Serving images from {image_dir}")
 else:
     print(f"Warning: Image directory {image_dir} not found")
+    # Create images directory if it doesn't exist
+    Path(image_dir).mkdir(exist_ok=True)
+    print(f"Created images directory: {image_dir}")
 
 def load_product_database():
     global product_database
