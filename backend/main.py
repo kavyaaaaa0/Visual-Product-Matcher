@@ -29,12 +29,26 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# CORS configuration for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "*",  # Allow all origins for now
+        "https://visual-product-matcher.vercel.app",
+        "https://*.vercel.app",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=[
+        "*",
+        "Content-Type",
+        "Authorization",
+        "Accept",
+        "Origin",
+        "X-Requested-With"
+    ],
 )
 
 product_database: Optional[Dict[str, Any]] = None

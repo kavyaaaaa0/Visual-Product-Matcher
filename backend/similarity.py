@@ -3,13 +3,9 @@ from typing import List, Dict
 from sklearn.metrics.pairwise import cosine_similarity
 from PIL import Image
 import io
-import tensorflow as tf
-try:
-    import tensorflow_hub as hub
-    TF_HUB_AVAILABLE = True
-except ImportError:
-    TF_HUB_AVAILABLE = False
-    print("TensorFlow Hub not available, using fallback similarity method")
+
+# TensorFlow is disabled for deployment simplicity
+TF_HUB_AVAILABLE = False
 
 def calculate_cosine_similarity(embedding1: List[float], embedding2: List[float]) -> float:
     try:
