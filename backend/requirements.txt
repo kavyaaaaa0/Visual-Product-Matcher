@@ -3,4 +3,5 @@ uvicorn
 python-multipart
 Pillow
 python-dotenv
+httpx
 gunicorn
