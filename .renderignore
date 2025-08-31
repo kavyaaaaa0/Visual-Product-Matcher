@@ -1,4 +1,8 @@
-# Docker files
+# Docker files (force exclusion)
+**/Dockerfile*
+**/docker-compose*
+**/*.docker
+**/.dockerignore
 Dockerfile*
 docker-compose*
 *.docker
@@ -23,3 +27,7 @@ __pycache__/
 .idea/
 *.swp
 *.swo
+
+# Explicitly exclude any Docker detection
+.dockerenv
+docker/
