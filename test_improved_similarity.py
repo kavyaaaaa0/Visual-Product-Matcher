@@ -9,7 +9,7 @@ from PIL import Image
 def test_similarity_system():
     """Test the improved similarity system to ensure proper garment type matching"""
     
-    print("🧪 Testing Improved Visual Similarity System...")
+    print("Testing Improved Visual Similarity System...")
     
     # Load database
     with open('product_database_deploy.json', 'r') as f:
@@ -31,12 +31,12 @@ def test_similarity_system():
         if category in test_cases and len(test_cases[category]) < 2:
             test_cases[category].append(product)
     
-    print(f"📋 Found test products:")
+    print(f"Found test products:")
     for category, items in test_cases.items():
         print(f"  {category}: {len(items)} products")
     
     # Test similarity within and across categories
-    print("\n🔍 Testing Similarity Matching...")
+    print("\nTesting Similarity Matching...")
     
     for test_category, test_products in test_cases.items():
         if len(test_products) < 1:
@@ -66,23 +66,23 @@ def test_similarity_system():
         print("Top 10 Similar Products:")
         same_category_count = 0
         for i, match in enumerate(similarities[:10]):
-            marker = "✅" if match['category'] == test_category else "❌"
+            marker = "MATCH" if match['category'] == test_category else "DIFF"
             if match['category'] == test_category:
                 same_category_count += 1
             print(f"{i+1:2d}. {marker} {match['similarity']:.3f} | {match['category']} | {match['name']}")
         
         accuracy = (same_category_count / 10) * 100
-        print(f"🎯 Same-category accuracy in top 10: {accuracy:.1f}% ({same_category_count}/10)")
+        print(f"Same-category accuracy in top 10: {accuracy:.1f}% ({same_category_count}/10)")
         
         # Check if any wrong categories are ranking too high
         wrong_categories_in_top_3 = sum(1 for match in similarities[:3] if match['category'] != test_category)
         if wrong_categories_in_top_3 > 0:
-            print(f"⚠️  {wrong_categories_in_top_3} wrong categories in top 3 matches!")
+            print(f"WARNING: {wrong_categories_in_top_3} wrong categories in top 3 matches!")
         else:
-            print("✅ No wrong categories in top 3 matches")
+            print("GOOD: No wrong categories in top 3 matches")
     
     print("\n" + "="*60)
-    print("🏁 SIMILARITY TESTING COMPLETED")
+    print("SIMILARITY TESTING COMPLETED")
 
 if __name__ == "__main__":
     test_similarity_system()

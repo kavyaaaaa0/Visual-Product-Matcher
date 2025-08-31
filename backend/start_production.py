@@ -69,7 +69,7 @@ def check_environment():
 
 def main():
     """Main startup function"""
-    logger.info("🚀 Starting Visual Product Matcher API (Production)")
+    logger.info("Starting Visual Product Matcher API (Production)")
     
     if not check_environment():
         logger.error("Environment check failed. Exiting.")

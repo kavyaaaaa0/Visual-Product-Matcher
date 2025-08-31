@@ -161,7 +161,7 @@ def extract_visual_features(image_path):
             silhouette_data['sleeve_prominence']
         ])
         
-        # Advanced shape analysis (8 features)
+        # Shape analysis (8 features)
         # Garment width distribution analysis
         row_widths = []
         for y in range(height):
@@ -238,7 +238,7 @@ def extract_visual_features(image_path):
         
         # === SECTION 2: STRUCTURAL PATTERN ANALYSIS (15 features) ===
         
-        # Advanced edge analysis for garment boundaries
+        # Edge analysis for garment boundaries
         edge_responses = []
         for y in range(1, height - 1):
             for x in range(1, width - 1):
@@ -423,19 +423,19 @@ def extract_visual_features(image_path):
 def regenerate_database_embeddings():
     """Regenerate all product embeddings using actual visual features"""
     
-    print("🔄 Regenerating database with visual embeddings...")
+    print("Regenerating database with visual embeddings...")
     
     # Load current database
     db_path = "backend/product_database_deploy.json"
     if not Path(db_path).exists():
-        print("❌ Database file not found!")
+        print("Database file not found!")
         return False
     
     with open(db_path, 'r') as f:
         database = json.load(f)
     
     products = database.get('products', [])
-    print(f"📊 Processing {len(products)} products...")
+    print(f"Processing {len(products)} products...")
     
     # Regenerate embeddings for each product
     updated_count = 0
@@ -452,11 +452,11 @@ def regenerate_database_embeddings():
                 product['embedding'] = visual_embedding
                 updated_count += 1
             else:
-                print(f"⚠️  Failed to extract features for {image_path}")
+                print(f"Failed to extract features for {image_path}")
         else:
-            print(f"⚠️  Image not found: {image_path}")
+            print(f"Image not found: {image_path}")
     
-    print(f"✅ Updated {updated_count} product embeddings")
+    print(f"Updated {updated_count} product embeddings")
     
     # Update metadata
     database['metadata']['embedding_model'] = "visual_feature_based"
@@ -467,14 +467,14 @@ def regenerate_database_embeddings():
     with open(db_path, 'w') as f:
         json.dump(database, f, indent=2)
     
-    print(f"💾 Saved updated database to {db_path}")
+    print(f"Saved updated database to {db_path}")
     
     # Also update the root copy
     root_db_path = "product_database_deploy.json"
     with open(root_db_path, 'w') as f:
         json.dump(database, f, indent=2)
     
-    print(f"💾 Updated root database copy: {root_db_path}")
+    print(f"Updated root database copy: {root_db_path}")
     
     return True
 

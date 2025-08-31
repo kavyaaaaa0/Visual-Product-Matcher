@@ -7,12 +7,12 @@ from pathlib import Path
 def test_database_and_images():
     """Test that database and images are properly set up"""
     
-    print("🔍 Testing Visual Product Matcher setup...")
+    print("Testing Visual Product Matcher setup...")
     
     # Test 1: Database exists and loads
     db_path = "backend/product_database_deploy.json"
     if not Path(db_path).exists():
-        print("❌ Database file not found!")
+        print("Database file not found!")
         return False
     
     with open(db_path, 'r') as f:
@@ -21,16 +21,16 @@ def test_database_and_images():
     products = database.get('products', [])
     categories = database.get('metadata', {}).get('categories_used', [])
     
-    print(f"✅ Database loaded: {len(products)} products, {len(categories)} categories")
+    print(f"Database loaded: {len(products)} products, {len(categories)} categories")
     
     # Test 2: Check image files exist
     images_dir = Path("backend/images")
     if not images_dir.exists():
-        print("❌ Images directory not found!")
+        print("Images directory not found!")
         return False
     
     image_files = list(images_dir.glob("*.jpg"))
-    print(f"✅ Found {len(image_files)} image files")
+    print(f"Found {len(image_files)} image files")
     
     # Test 3: Verify image paths match actual files
     missing_images = 0
@@ -42,22 +42,22 @@ def test_database_and_images():
             missing_images += 1
     
     if missing_images > 0:
-        print(f"⚠️  {missing_images} products have missing image files")
+        print(f"WARNING: {missing_images} products have missing image files")
     else:
-        print("✅ All product images exist")
+        print("All product images exist")
     
     # Test 4: Show category distribution
-    print(f"\n📊 Category distribution:")
+    print(f"\nCategory distribution:")
     category_counts = database.get('metadata', {}).get('category_counts', {})
     for category, count in sorted(category_counts.items()):
         print(f"   • {category}: {count} products")
     
     # Test 5: Show sample products
-    print(f"\n🎯 Sample products:")
+    print(f"\nSample products:")
     for i, product in enumerate(products[:5]):
         print(f"   • {product['category']}: {product['product_name'][:50]}...")
     
-    print(f"\n✅ Setup complete! Your Visual Product Matcher has:")
+    print(f"\nSetup complete! Your Visual Product Matcher has:")
     print(f"   • {len(products)} diverse fashion products")
     print(f"   • {len(categories)} different categories")
     print(f"   • {len(image_files)} product images")

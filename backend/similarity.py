@@ -116,7 +116,7 @@ def generate_enhanced_color_features(image: Image.Image) -> List[float]:
     return features
 
 def detect_garment_silhouette(image: Image.Image) -> Dict[str, float]:
-    """Advanced garment silhouette detection for shape-based classification"""
+    """Garment silhouette detection for shape-based classification"""
     width, height = image.size
     rgb_pixels = list(image.getdata())
     
@@ -210,7 +210,7 @@ def detect_garment_silhouette(image: Image.Image) -> Dict[str, float]:
     }
 
 def extract_visual_features_from_image(image: Image.Image) -> List[float]:
-    """Extract advanced garment-focused visual features for accurate clothing classification"""
+    """Extract garment-focused visual features for clothing classification"""
     try:
         # Resize for consistency
         if image.width > 224 or image.height > 224:
@@ -228,8 +228,7 @@ def extract_visual_features_from_image(image: Image.Image) -> List[float]:
         if not rgb_pixels:
             return [0.1] * 50
         
-        # === SECTION 1: GARMENT SHAPE ANALYSIS (20 features) ===
-        # This is the most important section for distinguishing garment types
+        # SECTION 1: GARMENT SHAPE ANALYSIS
         
         silhouette_data = detect_garment_silhouette(image)
         
@@ -246,7 +245,7 @@ def extract_visual_features_from_image(image: Image.Image) -> List[float]:
             silhouette_data['sleeve_prominence']
         ])
         
-        # Advanced shape analysis (11 features)
+        # Shape analysis (11 features)
         # Garment width distribution analysis
         row_widths = []
         for y in range(height):
@@ -321,9 +320,9 @@ def extract_visual_features_from_image(image: Image.Image) -> List[float]:
             width_variance, garment_fit, length_category, symmetry_score
         ])
         
-        # === SECTION 2: STRUCTURAL PATTERN ANALYSIS (15 features) ===
+        # SECTION 2: STRUCTURAL PATTERN ANALYSIS
         
-        # Advanced edge analysis for garment boundaries
+        # Edge analysis for garment boundaries
         edge_responses = []
         for y in range(1, height - 1):
             for x in range(1, width - 1):
@@ -440,8 +439,7 @@ def extract_visual_features_from_image(image: Image.Image) -> List[float]:
         
         features.extend(region_features + [center_x, center_y, structural_symmetry, garment_coverage])
         
-        # === SECTION 3: MINIMAL COLOR FEATURES (10 features) ===
-        # Reduced color importance for better shape-based matching
+        # SECTION 3: COLOR FEATURES
         
         # Basic color statistics (6 features)
         rgb_means = [mean([p[i] for p in rgb_pixels]) / 255.0 for i in range(3)]
@@ -465,8 +463,7 @@ def extract_visual_features_from_image(image: Image.Image) -> List[float]:
         
         features.extend([avg_color_range, brightness, contrast, dominant_channel / 2.0])
         
-        # === SECTION 4: TEXTURE ANALYSIS (5 features) ===
-        # Keep minimal texture analysis
+        # SECTION 4: TEXTURE ANALYSIS
         
         # Local texture variance
         block_size = 16
