@@ -1,6 +1,5 @@
-import numpy as np
+import math
 from typing import List, Dict
-from sklearn.metrics.pairwise import cosine_similarity
 from PIL import Image
 import io
 
@@ -9,9 +8,19 @@ TF_HUB_AVAILABLE = False
 
 def calculate_cosine_similarity(embedding1: List[float], embedding2: List[float]) -> float:
     try:
-        vec1 = np.array(embedding1).reshape(1, -1)
-        vec2 = np.array(embedding2).reshape(1, -1)
-        similarity = cosine_similarity(vec1, vec2)[0][0]
+        # Calculate dot product
+        dot_product = sum(a * b for a, b in zip(embedding1, embedding2))
+        
+        # Calculate magnitudes
+        magnitude1 = math.sqrt(sum(a * a for a in embedding1))
+        magnitude2 = math.sqrt(sum(b * b for b in embedding2))
+        
+        # Avoid division by zero
+        if magnitude1 == 0 or magnitude2 == 0:
+            return 0.0
+            
+        # Calculate cosine similarity
+        similarity = dot_product / (magnitude1 * magnitude2)
         return float(similarity)
     except Exception as e:
         print(f"Error calculating similarity: {e}")
@@ -52,48 +61,56 @@ def generate_deep_features(image: Image.Image) -> List[float]:
         print(f"Error extracting deep features: {e}")
         return []
 
+def mean(values):
+    return sum(values) / len(values) if values else 0
+
+def std_dev(values):
+    if not values:
+        return 0
+    m = mean(values)
+    variance = sum((x - m) ** 2 for x in values) / len(values)
+    return math.sqrt(variance)
+
+def simple_histogram(values, bins=5, range_min=0, range_max=255):
+    """Simple histogram implementation"""
+    bin_width = (range_max - range_min) / bins
+    hist = [0] * bins
+    
+    for val in values:
+        bin_index = min(int((val - range_min) / bin_width), bins - 1)
+        if bin_index >= 0:
+            hist[bin_index] += 1
+    
+    return hist
+
 def generate_enhanced_color_features(image: Image.Image) -> List[float]:
     """Generate enhanced color and texture features"""
     features = []
     
     # Convert to different color spaces for better analysis
     rgb_img = image.convert('RGB')
-    hsv_img = image.convert('HSV')
     
     # RGB analysis
     rgb_pixels = list(rgb_img.getdata())
-    hsv_pixels = list(hsv_img.getdata())
     
-    if rgb_pixels and hsv_pixels:
+    if rgb_pixels:
         # RGB statistics
-        rgb_means = [np.mean([p[i] for p in rgb_pixels]) / 255.0 for i in range(3)]
-        rgb_stds = [np.std([p[i] for p in rgb_pixels]) / 255.0 for i in range(3)]
+        rgb_means = [mean([p[i] for p in rgb_pixels]) / 255.0 for i in range(3)]
+        rgb_stds = [std_dev([p[i] for p in rgb_pixels]) / 255.0 for i in range(3)]
         
-        # HSV statistics (better for color similarity)
-        hsv_means = [np.mean([p[i] for p in hsv_pixels]) / 255.0 for i in range(3)]
-        hsv_stds = [np.std([p[i] for p in hsv_pixels]) / 255.0 for i in range(3)]
-        
-        features.extend(rgb_means + rgb_stds + hsv_means + hsv_stds)
+        features.extend(rgb_means + rgb_stds)
         
         # Color distribution (histogram)
         for channel in range(3):
             rgb_vals = [p[channel] for p in rgb_pixels]
-            hist, _ = np.histogram(rgb_vals, bins=5, range=(0, 255))
-            hist_norm = hist / len(rgb_pixels)
-            features.extend(hist_norm.tolist())
+            hist = simple_histogram(rgb_vals, bins=5, range_min=0, range_max=255)
+            hist_norm = [h / len(rgb_pixels) for h in hist]
+            features.extend(hist_norm)
         
-        # Texture features (edge detection approximation)
-        rgb_array = np.array(rgb_img)
-        gray = np.mean(rgb_array, axis=2)
-        
-        # Simple edge detection
-        edges_h = np.abs(np.diff(gray, axis=0)).mean()
-        edges_v = np.abs(np.diff(gray, axis=1)).mean()
-        features.extend([edges_h / 255.0, edges_v / 255.0])
-        
-        # Brightness and contrast
-        brightness = np.mean(gray) / 255.0
-        contrast = np.std(gray) / 255.0
+        # Brightness and contrast  
+        brightness_vals = [sum(p) / 3 for p in rgb_pixels]
+        brightness = mean(brightness_vals) / 255.0
+        contrast = std_dev(brightness_vals) / 255.0
         features.extend([brightness, contrast])
     
     return features
@@ -139,9 +156,9 @@ def generate_query_embedding(image_data: bytes) -> List[float]:
                 g_values = [p[1]/255.0 for p in pixels]
                 b_values = [p[2]/255.0 for p in pixels]
                 
-                r_var = np.var(r_values)
-                g_var = np.var(g_values)
-                b_var = np.var(b_values)
+                r_var = std_dev(r_values) ** 2  # variance is std dev squared
+                g_var = std_dev(g_values) ** 2
+                b_var = std_dev(b_values) ** 2
                 
                 aspect_ratio = image.width / image.height if image.height > 0 else 1.0
                 features.extend([avg_r, avg_g, avg_b, r_var, g_var, b_var, aspect_ratio])
