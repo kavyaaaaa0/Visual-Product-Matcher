@@ -196,7 +196,17 @@ async function handleSearch() {
         
     } catch (error) {
         console.error('Search error:', error);
-        showError(error.message || 'Failed to search for similar products. Please try again.');
+        let errorMessage = 'Failed to search for similar products. Please try again.';
+        
+        if (typeof error === 'string') {
+            errorMessage = error;
+        } else if (error.message && typeof error.message === 'string') {
+            errorMessage = error.message;
+        } else if (error.detail && typeof error.detail === 'string') {
+            errorMessage = error.detail;
+        }
+        
+        showError(errorMessage);
     } finally {
         showLoading(false);
     }

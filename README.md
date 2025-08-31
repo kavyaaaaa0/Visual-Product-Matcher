@@ -1,79 +1,99 @@
-# Visual Product Matcher - Production Deployment Guide
+# Visual Product Matcher
 
-A professional-grade visual product similarity search application using AI and vector databases.
+🔍 **AI-powered visual similarity search for fashion products using advanced computer vision**
 
-## 🏗️ Architecture
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://visual-product-matcher-xi.vercel.app)
+[![Backend API](https://img.shields.io/badge/API-Docs-blue)](https://visual-product-matcher-p5u4.onrender.com/docs)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-- **Backend**: FastAPI + Pinecone Vector Database
-- **Frontend**: React TypeScript
-- **Hosting**: Render (Backend) + Vercel (Frontend)
-- **AI Models**: MobileNetV2 for embeddings, Google AI for categorization
+## 🌐 Live Deployments
 
-## 🚀 Quick Deployment
+- **🎯 Frontend Application**: [https://visual-product-matcher-xi.vercel.app](https://visual-product-matcher-xi.vercel.app)
+- **⚡ Backend API**: [https://visual-product-matcher-p5u4.onrender.com](https://visual-product-matcher-p5u4.onrender.com)
+- **📚 API Documentation**: [https://visual-product-matcher-p5u4.onrender.com/docs](https://visual-product-matcher-p5u4.onrender.com/docs)
 
-### Prerequisites
-1. GitHub account
-2. Render account (https://render.com)
-3. Vercel account (https://vercel.com)
-4. Pinecone account (https://app.pinecone.io) - Free tier
+## ✨ Features
 
-### One-Click Deployment
+### 🎯 Core Functionality
+- **Advanced Visual Search**: Upload images or provide URLs to find similar fashion products
+- **Smart Garment Recognition**: Distinguishes between different clothing types (trousers, dresses, tops, etc.)
+- **Real-time Processing**: Fast similarity matching with optimized algorithms
+- **Multiple Input Methods**: Support for file uploads and URL-based searches
+- **Responsive Design**: Works seamlessly across desktop and mobile devices
 
-1. **Run the deployment script:**
-   ```bash
-   ./deploy.sh
-   ```
+### 🧠 AI & Computer Vision
+- **Shape-based Matching**: Prioritizes garment silhouette and structure over color
+- **Advanced Feature Extraction**: 50-dimensional visual embeddings capturing:
+  - Garment shape and aspect ratio
+  - Structural patterns and edges
+  - Texture analysis
+  - Color features (with reduced importance)
+- **Category-aware Similarity**: Optimized matching within clothing categories
 
-2. **Deploy Backend to Render:**
-   - Connect your GitHub repository to Render
-   - Create new Web Service
-   - Render will auto-detect `render.yaml`
-   - Set environment variables:
-     - `PINECONE_API_KEY`: Get from Pinecone dashboard
-     - `GOOGLE_API_KEY`: Already in your .env
+### 🛠️ Technical Highlights
+- **FastAPI Backend**: High-performance async API with automatic documentation
+- **Modern Frontend**: Clean, intuitive interface built with vanilla JavaScript
+- **Vector-based Search**: Efficient similarity computation using cosine distance
+- **Error Handling**: Comprehensive error management and user feedback
+- **CORS Support**: Cross-origin resource sharing for web integration
 
-3. **Deploy Frontend to Vercel:**
-   - Import GitHub repository to Vercel
-   - Vercel will auto-detect React app
-   - Environment variables are set via `vercel.json`
+## 🚀 Quick Start
 
-## 🔧 Manual Setup
+### 📱 Using the Live Application
+1. Visit [https://visual-product-matcher-xi.vercel.app](https://visual-product-matcher-xi.vercel.app)
+2. Upload an image or provide a URL of a fashion product
+3. Adjust similarity threshold if needed
+4. Click "Find Similar Products" to see results
 
-### Backend Setup
+### 🔧 Local Development Setup
+
+#### Prerequisites
+- Python 3.8+
+- Node.js 14+ (for frontend development)
+- Git
+
+#### Backend Setup
 ```bash
-cd backend
-pip install -r requirements.txt
-python main.py
+# Clone the repository
+git clone https://github.com/kavyaaaaaa/Visual-Product-Matcher.git
+cd Visual-Product-Matcher-Deploy
+
+# Install dependencies
+pip install -r backend/requirements.txt
+
+# Run the backend server
+python backend/main.py
 ```
 
-### Frontend Setup  
+The API will be available at `http://localhost:8000`
+
+#### Frontend Setup
 ```bash
+# Navigate to frontend directory (if not already there)
 cd frontend
+
+# Install dependencies
 npm install
+
+# Start development server
 npm start
 ```
 
-## 🌐 Live URLs
+The frontend will be available at `http://localhost:3000`
 
-After deployment, your app will be available at:
-- **Backend API**: https://visual-product-matcher-backend.onrender.com
-- **Frontend**: https://your-project.vercel.app
+## 🏛️ Architecture
 
-## 📊 Features
+### Backend Components
+- **FastAPI**: High-performance Python web framework
+- **Image Processing Pipeline**: Advanced computer vision for feature extraction
+- **Similarity Engine**: Weighted cosine similarity for garment matching
+- **JSON Database**: Optimized storage of product data and visual embeddings
 
-### Current Implementation
-- ✅ Image upload similarity search
-- ✅ URL-based image search  
-- ✅ Real-time product matching
-- ✅ Category filtering
-- ✅ Responsive UI
-- ✅ Error handling & logging
-
-### With Pinecone (Optional Upgrade)
-- ⚡ 10x faster search performance
-- 📈 Scalable to millions of products
-- 🧠 Better embeddings with MobileNetV2
-- 💾 Reduced memory usage
+### Frontend Components
+- **Modern JavaScript**: Clean, efficient UI implementation
+- **Responsive Design**: Mobile-first approach with CSS flexbox/grid
+- **Preview System**: Real-time image upload and URL validation
+- **Results Display**: Interactive product card grid with similarity scores
 
 ## 🔑 API Endpoints
 
