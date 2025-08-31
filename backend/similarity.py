@@ -262,19 +262,52 @@ def extract_visual_features_from_image(image: Image.Image) -> List[float]:
             else:
                 features.extend([0.33, 0.33, 0.33])
             
-            # Shape approximation
+            # Shape approximation and garment-specific features
             # Count edge pixels (approximation)
             edge_pixel_count = sum(1 for e in edge_responses if e > 30) if edge_responses else 0
             edge_density = edge_pixel_count / len(rgb_pixels) if rgb_pixels else 0
             
-            # Color uniformity
+            # Garment silhouette analysis
+            # Analyze vertical vs horizontal structure (key for dress vs top vs skirt)
+            vertical_structure = v_norm if 'v_norm' in locals() else 0.33
+            horizontal_structure = h_norm if 'h_norm' in locals() else 0.33
+            
+            # Garment length indicator (aspect ratio analysis)
+            garment_length_indicator = aspect_ratio
+            if aspect_ratio > 1.5:  # Very tall - likely full dress
+                length_category = 0.9
+            elif aspect_ratio > 1.0:  # Moderately tall - top/kurta
+                length_category = 0.6
+            else:  # Wide - likely cropped/skirt
+                length_category = 0.3
+            
+            # Edge concentration (where are most edges - important for garment boundaries)
+            top_quarter_edges = 0
+            bottom_quarter_edges = 0
+            middle_edges = 0
+            
+            for y in range(1, height - 1):
+                for x in range(1, width - 1):
+                    if y < height // 4:  # Top quarter
+                        top_quarter_edges += 1 if edge_responses[y * (width-2) + x - y] > 30 else 0
+                    elif y > 3 * height // 4:  # Bottom quarter
+                        bottom_quarter_edges += 1 if edge_responses[y * (width-2) + x - y] > 30 else 0
+                    else:  # Middle
+                        middle_edges += 1 if edge_responses[y * (width-2) + x - y] > 30 else 0
+            
+            total_edge_pixels = max(top_quarter_edges + bottom_quarter_edges + middle_edges, 1)
+            top_edge_ratio = top_quarter_edges / total_edge_pixels
+            bottom_edge_ratio = bottom_quarter_edges / total_edge_pixels
+            
+            # Color uniformity (keep but reduce importance)
             color_ranges = []
             for channel in range(3):
                 channel_vals = [p[channel] for p in rgb_pixels]
                 color_ranges.append((max(channel_vals) - min(channel_vals)) / 255.0)
             avg_color_range = mean(color_ranges)
             
-            features.extend([edge_density, avg_color_range])
+            features.extend([edge_density, length_category, vertical_structure, 
+                           horizontal_structure, top_edge_ratio, bottom_edge_ratio, avg_color_range])
         
         # Ensure exactly 50 dimensions
         while len(features) < 50:
@@ -299,25 +332,39 @@ def generate_query_embedding(image_data: bytes) -> List[float]:
         return [0.1] * 50
 
 def calculate_enhanced_similarity(query_embedding: List[float], product_embedding: List[float]) -> float:
-    """Calculate similarity with enhanced weighting for clothing features"""
+    """Calculate similarity prioritizing garment shape/structure over color"""
     try:
         if len(query_embedding) != len(product_embedding) or len(query_embedding) != 50:
             return 0.0
         
-        # Define feature importance weights
+        # Define feature importance weights - HEAVILY prioritize shape over color
         weights = [1.0] * 50
         
-        # Color features (dims 0-22) - moderate importance
-        for i in range(23):
-            weights[i] = 0.8
+        # Color features (dims 0-22) - MINIMAL importance for garment type matching
+        for i in range(6):  # RGB means and stds
+            weights[i] = 0.05  # Nearly ignore color
+        for i in range(6, 21):  # Color histograms
+            weights[i] = 0.1   # Nearly ignore color distribution
+        for i in range(21, 23):  # Brightness and contrast
+            weights[i] = 0.2
         
-        # Shape/texture features (dims 23-49) - high importance for clothing type
-        for i in range(23, 50):
-            weights[i] = 1.2
+        # Color dominance and temperature (dims 23-32) - MINIMAL importance
+        for i in range(23, 33):
+            weights[i] = 0.1   # Nearly ignore color temperature
         
-        # Edge and texture features (dims 33-49) - highest importance
-        for i in range(33, 50):
-            weights[i] = 1.5
+        # Texture and edge features (dims 33-49) - MAXIMUM importance for garment type
+        for i in range(33, 41):  # Edge detection features
+            weights[i] = 5.0   # Maximum weight for shape detection
+        for i in range(41, 43):  # Texture variance features
+            weights[i] = 4.0
+        for i in range(43, 46):  # Directional features (crucial for garment shape)
+            weights[i] = 6.0   # Absolute highest weight for garment structure
+        for i in range(46, 50):  # Shape-specific features we added
+            weights[i] = 5.5   # Very high weight for garment silhouette
+        
+        # Aspect ratio and shape features - MAXIMUM importance
+        if len(weights) > 31:  # Aspect ratio position
+            weights[31] = 8.0  # Extremely critical for garment type (dress vs skirt vs top)
         
         # Calculate weighted cosine similarity
         weighted_dot_product = sum(w * a * b for w, a, b in zip(weights, query_embedding, product_embedding))
