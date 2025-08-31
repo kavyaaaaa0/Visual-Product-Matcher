@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import time
 import httpx
@@ -71,12 +72,22 @@ def load_product_database():
 
 @app.on_event("startup")
 async def startup_event():
-    print("Starting Visual Product Matcher API...")
-    
-    if not load_product_database():
-        raise RuntimeError("Failed to load product database")
-    
-    print("API ready!")
+    try:
+        print("Starting Visual Product Matcher API...")
+        print(f"Python version: {sys.version}")
+        print(f"Current working directory: {os.getcwd()}")
+        print(f"Files in directory: {os.listdir('.')}")
+        
+        if not load_product_database():
+            raise RuntimeError("Failed to load product database")
+        
+        print("API ready!")
+        
+    except Exception as e:
+        print(f"Startup error: {e}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        raise
 
 @app.get("/", response_model=HealthResponse)
 async def root():
