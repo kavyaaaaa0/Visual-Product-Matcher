@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "public": true,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "functions": {
+    "frontend/**": {
+      "includeFiles": "frontend/**"
+    }
+  },
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/frontend/index.html"
+    },
+    {
+      "src": "/(.*)\\.(css|js|ico|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)",
+      "dest": "/frontend/$1.$2"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/index.html"
+    }
+  ]
+}

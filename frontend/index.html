@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Product Matcher</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Visual Product Matcher</h1>
+            <p>Find visually similar fashion products using AI</p>
+        </header>
+
+        <main>
+            <!-- Search Method Toggle -->
+            <div class="method-toggle">
+                <button id="upload-btn" class="method-btn active">Upload Image</button>
+                <button id="url-btn" class="method-btn">Image URL</button>
+            </div>
+
+            <!-- Upload Section -->
+            <section id="upload-section" class="search-section">
+                <div id="dropzone" class="dropzone">
+                    <input type="file" id="file-input" accept="image/*" style="display: none;">
+                    <div class="dropzone-content">
+                        <p>Drag & drop an image here, or click to select</p>
+                        <small>Supported formats: JPEG, PNG, GIF, WebP (max 10MB)</small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- URL Section -->
+            <section id="url-section" class="search-section hidden">
+                <div class="url-input-container">
+                    <input type="text" id="image-url" placeholder="Enter image URL (e.g., https://example.com/image.jpg)...">
+                </div>
+            </section>
+
+            <!-- Preview Section -->
+            <section id="preview-section" class="preview-section hidden">
+                <h3>Query Image</h3>
+                <img id="preview-image" alt="Query" class="preview-image">
+            </section>
+
+            <!-- Controls -->
+            <section class="controls-section">
+                <div class="similarity-control">
+                    <label for="similarity-slider">Minimum Similarity: <span id="similarity-value">30.0%</span></label>
+                    <input id="similarity-slider" type="range" min="0" max="100" step="5" value="30">
+                </div>
+                
+                <button id="search-btn" class="search-btn" disabled>Find Similar Products</button>
+            </section>
+
+            <!-- Error Display -->
+            <div id="error-message" class="error-message hidden"></div>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="loading-state hidden">
+                <div class="spinner"></div>
+                <p>Analyzing image and finding similar products...</p>
+            </div>
+
+            <!-- Results Section -->
+            <section id="results-section" class="results-section hidden">
+                <div class="results-header">
+                    <h2>Similar Products Found</h2>
+                    <p id="results-info"></p>
+                </div>
+                
+                <div id="results-grid" class="results-grid"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
