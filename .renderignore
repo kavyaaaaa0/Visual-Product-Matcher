@@ -1,10 +1,25 @@
+# Docker files
 Dockerfile*
 docker-compose*
 *.docker
 .dockerignore
-backend/venv/
-frontend/node_modules/
+
+# Development directories
+backend/
+frontend/
+venv/
+node_modules/
+
+# System files
 .git/
 .DS_Store
 *.log
 __pycache__/
+*.pyc
+.pytest_cache/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
