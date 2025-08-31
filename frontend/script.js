@@ -268,7 +268,7 @@ function createProductCard(product) {
     card.className = 'product-card';
     
     const similarity = (product.similarity_score * 100).toFixed(1);
-    const imageUrl = `${API_BASE_URL}/images/${product.image_path.split('/').pop()}`;
+    const imageUrl = `${API_BASE_URL}/${product.image_path}`;
     
     card.innerHTML = `
         <div class="product-image-container">
